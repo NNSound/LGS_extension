@@ -136,7 +136,6 @@
 --    screen_height_in_pixels,  -- for example, 1080
 --    x_64K,                    -- normalized x coordinate 0..65535, this is the first  value returned by 'GetMousePosition()'
 --    y_64K                     -- normalized y coordinate 0..65535, this is the second value returned by 'GetMousePosition()'
-
 -- We already have standard LGS function 'MoveMouseRelative' which operates with distance in pixels, but it has two problems:
 -- The first problem: 'MoveMouseRelative' is limited to narrow distance range: from -127 to +127 pixels from the current position.
 --    MoveMouseRelative(300, 300)  -- This invocation will work incorrectly because 300 is greater than 127
@@ -273,13 +272,9 @@ D_filename = "D_for_profile_1.lua"
 --            but use your new folder path instead of 'C:\LGS extension'
 -- ------------------------------------------------------------------------------------------
 
-
-
-
 -- Loading the main module
-extension_module_full_path = [[C:\LGS extension\LGS_extension.lua]]
+extension_module_full_path = [[C:\LGS_extension\LGS_extension.lua]]
 dofile(extension_module_full_path)
-
 
 ----------------------------------------------------------------------
 -- FUNCTIONS AND VARIABLES
@@ -287,229 +282,148 @@ dofile(extension_module_full_path)
 -- insert all your functions and variables here
 --
 
-
-
 function OnEvent(event, arg, family)
-   local mouse_button
-   if event == "MOUSE_BUTTON_PRESSED" or event == "MOUSE_BUTTON_RELEASED" then
-      mouse_button = Logitech_order[arg] or arg  -- convert 'arg' (number) to 'mouse_button' (either a string "L","R","M" or a number 4, 5, 6, 7, 8...)
-   elseif event == "PROFILE_ACTIVATED" then
-      ClearLog()
-      EnablePrimaryMouseButtonEvents(true)
-      update_internal_state(GetDate())  -- it takes about 1 second because of determining your screen resolution
-      ----------------------------------------------------------------------
-      -- CODE FOR PROFILE ACTIVATION
-      ----------------------------------------------------------------------
-      -- set your favourite mouse sensitivity
-      SetMouseDPITableIndex(2)
-      -- turn NumLock ON if it is currently OFF (to make numpad keys 0-9 usable in a game)
-      if not IsKeyLockOn"NumLock" then
-         PressAndReleaseKey"NumLock"
-      end
-      D = Load_table_D and Load_table_D() or {}  -- load persistent table 'D' from disk
+    local mouse_button
+    if event == "MOUSE_BUTTON_PRESSED" or event == "MOUSE_BUTTON_RELEASED" then
+        mouse_button = Logitech_order[arg] or arg -- convert 'arg' (number) to 'mouse_button' (either a string "L","R","M" or a number 4, 5, 6, 7, 8...)
+    elseif event == "PROFILE_ACTIVATED" then
+        ClearLog()
+        EnablePrimaryMouseButtonEvents(true)
+        ----------------------------------------------------------------------
+        -- CODE FOR PROFILE ACTIVATION
+        ----------------------------------------------------------------------
+        -- set your favourite mouse sensitivity
+        SetMouseDPITableIndex(2)
+        -- turn NumLock ON if it is currently OFF (to make numpad keys 0-9 usable in a game)
+        if not IsKeyLockOn "NumLock" then PressAndReleaseKey "NumLock" end
+        D = Load_table_D and Load_table_D() or {} -- load persistent table 'D' from disk
 
-      ------ this is the first part of example how to use the persistent table 'D':
-      D.profile_run_cnt = (D.profile_run_cnt or 0) + 1
-      D.profile_total_time_in_msec = D.profile_total_time_in_msec or 0
-      print("Total number of times this profile was started = "..D.profile_run_cnt)
-      local t = math.floor(D.profile_total_time_in_msec / 1000)
-      print("Total amount of time spent in this profile (hr:min:sec) = "..string.format("%d:%02d:%02d", math.floor(t / 3600), math.floor(t / 60) % 60, t % 60))
-      ------ (end of the first part of example)
+        ------ this is the first part of example how to use the persistent table 'D':
+        D.profile_run_cnt = (D.profile_run_cnt or 0) + 1
+        D.profile_total_time_in_msec = D.profile_total_time_in_msec or 0
+        print("Total number of times this profile was started = " ..
+                  D.profile_run_cnt)
+        local t = math.floor(D.profile_total_time_in_msec / 1000)
+        print("Total amount of time spent in this profile (hr:min:sec) = " ..
+                  string.format("%d:%02d:%02d", math.floor(t / 3600),
+                                math.floor(t / 60) % 60, t % 60))
+        ------ (end of the first part of example)
 
-      -- insert your code here (initialize variables, display "Hello" on LCD screen, etc.)
-      --
-   end
-   update_internal_state(event, arg, family)    -- this invocation adds entropy to RNG (it's very fast)
-   ----------------------------------------------------------------------
-   -- LOG THIS EVENT
-   ----------------------------------------------------------------------
-   -- print(
-   --    "event = '"..event.."'",
-   --    not mouse_button and "arg = "..arg or "mouse_button = "..(type(mouse_button) == "number" and mouse_button or "'"..mouse_button.."'"),
-   --    "family = '"..family.."'"
-   -- )
-   --
-   if event == "PROFILE_DEACTIVATED" then
-      EnablePrimaryMouseButtonEvents(false)
-      ----------------------------------------------------------------------
-      -- CODE FOR PROFILE DEACTIVATION
-      ----------------------------------------------------------------------
-      -- to avoid LGS/GHUB crash, profile deactivation event must be handled in less than 1 second
-      -- insert your code here (display "Bye!" on LCD screen, etc.)
-      --
+        -- insert your code here (initialize variables, display "Hello" on LCD screen, etc.)
+        --
+    end
+    ----------------------------------------------------------------------
+    -- LOG THIS EVENT
+    ----------------------------------------------------------------------
+    -- print(
+    --    "event = '"..event.."'",
+    --    not mouse_button and "arg = "..arg or "mouse_button = "..(type(mouse_button) == "number" and mouse_button or "'"..mouse_button.."'"),
+    --    "family = '"..family.."'"
+    -- )
+    --
+    if event == "PROFILE_DEACTIVATED" then
+        EnablePrimaryMouseButtonEvents(false)
+        ----------------------------------------------------------------------
+        -- CODE FOR PROFILE DEACTIVATION
+        ----------------------------------------------------------------------
+        -- to avoid LGS/GHUB crash, profile deactivation event must be handled in less than 1 second
+        -- insert your code here (display "Bye!" on LCD screen, etc.)
+        --
 
-      ------ this is the second part of example how to use the persistent table 'D':
-      D.profile_total_time_in_msec = D.profile_total_time_in_msec + GetRunningTime()
-      ------ (end of the second part of example)
+        ------ this is the second part of example how to use the persistent table 'D':
+        D.profile_total_time_in_msec = D.profile_total_time_in_msec +
+                                           GetRunningTime()
+        ------ (end of the second part of example)
 
-      if Save_table_D then Save_table_D() end  -- save persistent table 'D' to disk
-      return
-   end
+        if Save_table_D then Save_table_D() end -- save persistent table 'D' to disk
+        return
+    end
 
-   ----------------------------------------------------------------------
-   -- MOUSE EVENTS PROCESSING
-   -- (you need it if you have Logitech G-series mouse)
-   ----------------------------------------------------------------------
-   if event == "MOUSE_BUTTON_PRESSED" and mouse_button == "L" then  -- left mouse button
-   end
-   if event == "MOUSE_BUTTON_RELEASED" and mouse_button == "L" then -- left mouse button
-   end
+    ----------------------------------------------------------------------
+    -- MOUSE EVENTS PROCESSING
+    -- (you need it if you have Logitech G-series mouse)
+    ----------------------------------------------------------------------
+    if event == "MOUSE_BUTTON_PRESSED" and mouse_button == "L" then -- left mouse button
+    end
+    if event == "MOUSE_BUTTON_RELEASED" and mouse_button == "L" then -- left mouse button
+    end
 
-   if event == "MOUSE_BUTTON_PRESSED" and mouse_button == "R" then  -- right mouse button
-   end
-   if event == "MOUSE_BUTTON_RELEASED" and mouse_button == "R" then -- right mouse button
-   end
+    if event == "MOUSE_BUTTON_PRESSED" and mouse_button == "R" then -- right mouse button
+    end
+    if event == "MOUSE_BUTTON_RELEASED" and mouse_button == "R" then -- right mouse button
+    end
 
-   if event == "MOUSE_BUTTON_PRESSED" and mouse_button == "M" then  -- middle mouse button
+    if event == "MOUSE_BUTTON_PRESSED" and mouse_button == "M" then -- middle mouse button
+    end
+    if event == "MOUSE_BUTTON_RELEASED" and mouse_button == "M" then -- middle mouse button
+    end
 
-      -- (this is code example #1, remove it after reading or testing)
-      -- press-and-hold MMB (middle mouse button) in your text editor to simulate typing a random string
-      -- press Ctrl+MMB to cyclically change mode: alphanumeric/digit/hexadecimal/disabled
-      random_string_mode = random_string_mode or "alphanumeric"
-      if IsModifierPressed"Ctrl" then
-         local next_mode = {alphanumeric = "digits", digits = "hexadecimal", hexadecimal = "disabled", disabled = "alphanumeric"}
-         random_string_mode = next_mode[random_string_mode]
-      elseif not IsModifierPressed"Shift" and not IsModifierPressed"Alt" and random_string_mode ~= "disabled" then
-         local alpha = "abcdefghijklmnopqrstuvwxyz"
-         local all_chars =
-            "0123456789"..(
-               random_string_mode == "hexadecimal" and alpha:sub(1, 6)
-               or random_string_mode == "digits" and ""
-               or alpha..alpha:upper()
-            )
-         repeat
-            for j = 1, random_string_mode == "hexadecimal" and 2 or 1 do  -- in "hexadecimal" mode hex digits are generated in pairs (whole bytes)
-               local k = random(#all_chars)
-               local c = all_chars:sub(k, k)
-               local shift_needed = c:find"%u"
-               if shift_needed then
-                  PressKey"RShift"
-               end
-               PressKey(c)
-               Sleep()
-               ReleaseKey(c)
-               if shift_needed then
-                  ReleaseKey"RShift"
-               end
-               Sleep()
-            end
-            Sleep(40)
-         until not IsMouseButtonPressed("M")
-      end
-      -- (end of code example #1)
+    if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 4 then -- 'backward' (X1) mouse button
+    end
+    if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 4 then -- 'backward' (X1) mouse button
+    end
 
-   end
-   if event == "MOUSE_BUTTON_RELEASED" and mouse_button == "M" then -- middle mouse button
-   end
+    if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 5 then -- 'forward' (X2) mouse button
+    end
+    if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 5 then -- 'forward' (X2) mouse button
+    end
 
-   if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 4 then  -- 'backward' (X1) mouse button
-   end
-   if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 4 then -- 'backward' (X1) mouse button
-   end
+    if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 6 then
+    end
+    if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 6 then
+    end
 
-   if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 5 then  -- 'forward' (X2) mouse button
-   end
-   if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 5 then -- 'forward' (X2) mouse button
-   end
+    if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 7 then
+    end
+    if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 7 then
+    end
 
-   if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 6 then
+    if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 8 then
+    end
+    if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 8 then
+    end
 
-      -- (this is code example #2, remove it after reading or testing)
-      -- move mouse cursor along a circle
-      local R = 50  -- the radius
-      if IsModifierPressed"Shift" then
-         -- with Shift pressed, the mouse is moving CCW using MoveMouseRelative()
-         local prev_x, prev_y = R, 0
-         for j = 1, 90 do
-            local angle = (2 * math.pi) * (j / 90)
-            local x = math.floor( R * math.cos(angle) + 0.5)
-            local y = math.floor(-R * math.sin(angle) + 0.5)
-            MoveMouseRelative(x - prev_x, y - prev_y)
-            prev_x, prev_y = x, y
-            Sleep()
-         end
-      else
-         -- without Shift, the mouse is moving CW using SetMousePositionInPixels()
-         local x_center, y_center = GetMousePositionInPixels()
-         x_center = x_center + R
-         for j = 1, 90 do
-            local angle = (2 * math.pi) * (j / 90)
-            SetMousePositionInPixels(x_center - R * math.cos(angle), y_center - R * math.sin(angle))
-            Sleep()
-         end
-      end
-      -- actual radii of these two circles (CW and CCW) may appear different due to quirks of MoveMouseRelative()
-      -- (end of code example #2)
+    if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 9 then
+    end
+    if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 9 then
+    end
 
-   end
-   if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 6 then
-   end
+    if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 10 then
+    end
+    if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 10 then
+    end
 
-   if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 7 then
-   end
-   if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 7 then
-   end
+    if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 11 then
+    end
+    if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 11 then
+    end
 
-   if event == "MOUSE_BUTTON_PRESSED" and mouse_button == 8 then
+    ----------------------------------------------------------------------
+    -- KEYBOARD AND LEFT-HANDED-CONTROLLER EVENTS PROCESSING
+    -- (you need it if you have any Logitech device with keys G1, G2, ...)
+    ----------------------------------------------------------------------
+    if event == "G_PRESSED" and arg == 1 then -- G1 key
+    end
+    if event == "G_RELEASED" and arg == 1 then -- G1 key
+    end
 
-      -- (this is code example #3, remove it after reading or testing)
-      -- print misc info (in the bottom panel of LGS/GHUB script editor) on mouse button 8 press
-      print("=============================================================")
-      print("Current date & time: "..GetDate())
-      local t = math.floor(GetRunningTime() / 1000)
-      print("profile running time (hr:min:sec) = "..string.format("%d:%02d:%02d", math.floor(t / 3600), math.floor(t / 60) % 60, t % 60))
-      print("approximately "..GetEntropyCounter().." bits of entropy were collected from button press events")
-      local i = random(6)       -- integer 1 <= i <= 6
-      print("random dice roll:", i)
-      local b = random(0, 255)  -- integer 0 <= b <= 255
-      print("random byte:", ("%02X"):format(b))
-      local x = random()        -- float   0 <= x < 1
-      print("random float:", x)
-      local mouse_x, mouse_y, screen_width, screen_height = GetMousePositionInPixels()
-      print("your screen size is "..screen_width.."x"..screen_height)
-      print("your mouse cursor is at pixel ("..mouse_x..","..mouse_y..")")
-      print("=============================================================")
-      -- (end of code example #3)
+    if event == "G_PRESSED" and arg == 12 then -- G12 key
+    end
+    if event == "G_RELEASED" and arg == 12 then -- G12 key
+    end
 
-   end
-   if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 8 then
-   end
+    if event == "M_PRESSED" and arg == 1 then -- M1 key
+    end
+    if event == "M_RELEASED" and arg == 1 then -- M1 key
+    end
 
-   ----------------------------------------------------------------------
-   -- KEYBOARD AND LEFT-HANDED-CONTROLLER EVENTS PROCESSING
-   -- (you need it if you have any Logitech device with keys G1, G2, ...)
-   ----------------------------------------------------------------------
-   if event == "G_PRESSED" and arg == 1 then    -- G1 key
-   end
-   if event == "G_RELEASED" and arg == 1 then   -- G1 key
-   end
+    if event == "M_PRESSED" and arg == 2 then -- M2 key
+    end
+    if event == "M_RELEASED" and arg == 2 then -- M2 key
+    end
 
-   if event == "G_PRESSED" and arg == 12 then    -- G12 key
-   end
-   if event == "G_RELEASED" and arg == 12 then   -- G12 key
-   end
-
-
-   if event == "M_PRESSED" and arg == 1 then    -- M1 key
-   end
-   if event == "M_RELEASED" and arg == 1 then   -- M1 key
-   end
-
-   if event == "M_PRESSED" and arg == 2 then    -- M2 key
-   end
-   if event == "M_RELEASED" and arg == 2 then   -- M2 key
-   end
-
-   if event == "M_PRESSED" and arg == 3 then    -- M3 key
-   end
-   if event == "M_RELEASED" and arg == 3 then   -- M3 key
-   end
-
-
-   ----------------------------------------------------------------------
-   -- EXIT EVENT PROCESSING
-   ----------------------------------------------------------------------
-   -- After current event is processed, we have some time before the next event occurs, because a human can't press buttons very frequently
-   -- So, it's a good time for 'background calculations'
-   perform_calculations()    -- precalculate next 25 strong random numbers (only if needed), it will take about 30 ms on a modern PC
+    if event == "M_PRESSED" and arg == 3 then -- M3 key
+    end
+    if event == "M_RELEASED" and arg == 3 then -- M3 key
+    end
 end
