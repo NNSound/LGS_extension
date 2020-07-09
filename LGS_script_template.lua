@@ -273,7 +273,7 @@ D_filename = "D_for_profile_1.lua"
 -- ------------------------------------------------------------------------------------------
 
 -- Loading the main module
-extension_module_full_path = [[C:\LGS_extension\LGS_extension\LGS_extension.lua]]
+extension_module_full_path = [[C:\package\LGS_extension\LGS extension\LGS_extension.lua]]
 dofile(extension_module_full_path)
 
 ----------------------------------------------------------------------
@@ -407,7 +407,6 @@ function OnEvent(event, arg, family)
     if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 5 then -- 'forward' (X2) mouse button
         OutputLogMessage("in MOUSE_BUTTON_RELEASED 5 ");
         if (IsModifierPressed("lshift")) then
-            -- 連續召喚
             OutputLogMessage("Loop Summon");
             local index = 0
             repeat
@@ -419,10 +418,9 @@ function OnEvent(event, arg, family)
                 until exiting or GetRunningTime() - tm > 200
                 G5CurrentIds = DragonCallNext(G5CurrentIds, G5Skills, true, true)
                 index = index + 1
-                Sleep(2000) -- 試情況調整
+                Sleep(2000)
              until exiting or index > 12
         else
-            -- 單次召喚
             G5CurrentIds = DragonCallNext(G5CurrentIds, G5Skills, true, true)
         end
     end
@@ -438,7 +436,6 @@ function OnEvent(event, arg, family)
     end
     if event == "MOUSE_BUTTON_RELEASED" and mouse_button == 7 then
         OutputLogMessage("in MOUSE_BUTTON_RELEASED 7 \n");
-        -- 戰場
         PressKey("lalt");
         PressAndReleaseKey("num7");
         ReleaseKey("lalt");
@@ -506,76 +503,57 @@ end
 
 function DragonCallNext(currentIds, skills, isChange2, isColse)
 
-    -- 此類型寵物有幾排
     OutputLogMessage("skillslength = %s \n", table.getn(skills));
-    -- 現在使用第幾排
     OutputLogMessage("currentSkillIndex = %s \n", currentIds.currentSkillIndex);
 
-    -- 查看標註 上次叫寵有沒有收
     if (currentIds.closeStatus == false) then
-        -- 收寵
         PressAndReleaseKey(skill.backSkill);
         currentIds.closeStatus = true
     end
 
-    -- currentIds.currentSkillIndex => 現在第幾排
-    -- currentIds.currentPetIndex => 這一排的第幾個
-    local skill = skills[currentIds.currentSkillIndex]; -- 切換設定檔到 currentIds.currentSkillIndex 排
-    local pets = skill.petKeys; -- 取得寵物按鍵的陣列
-    local pet = pets[currentIds.currentPetIndex]; -- 等等要叫得是哪個寵物
+    local skill = skills[currentIds.currentSkillIndex];
+    local pets = skill.petKeys;
+    local pet = pets[currentIds.currentPetIndex];
     OutputLogMessage("pet = %s \n", (currentIds.currentPetIndex));
 
-    -- 收寵
     PressAndReleaseKey(skill.backSkill);
     Sleep(100)
 
-    -- 是否需要切換左右欄位
     if (isChange2 == true) then
         PressKey("lctrl");
         PressAndReleaseKey("tilde");
         ReleaseKey("lctrl");
     end
 
-    -- 切換到對應標籤 1~8
     PressKey("lctrl");
     PressAndReleaseKey(skill.skill);
     ReleaseKey("lctrl");
 
-    -- 召寵
     PressAndReleaseKey(pet);
 
-    -- 切回第1頁
     -- PressKey("lctrl");
     -- PressKey("1");
     -- ReleaseKey("lalt");
     -- ReleaseKey("1");
 
-    -- 是否需要切換左右欄位
     if (isChange2 == true) then
         PressKey("lctrl");
-        PressAndReleaseKey("tilde");
+        PressAndReleaseKey();
         ReleaseKey("lctrl");
     end
 
-    -- 是否召完收寵
     if (isColse == true) then
         PressAndReleaseKey(skill.backSkill);
     else
-        -- 標註 這支寵物沒收
         currentIds.closeStatus = false
     end
 
-    -- 如果這頁還沒叫完
     if (currentIds.currentPetIndex < table.getn(pets)) then
-        -- 下次要叫的寵物
         currentIds.currentPetIndex = currentIds.currentPetIndex + 1;
     else
-        -- 如果這頁叫完了 切換到下一頁
         currentIds.currentSkillIndex = currentIds.currentSkillIndex + 1;
-        -- 從下一頁的第一支開始
         currentIds.currentPetIndex = 1;
     end
-    -- 如果頁數溢位 回到第一頁
     if (currentIds.currentSkillIndex > table.getn(skills)) then
         currentIds.currentSkillIndex = 1;
         currentIds.currentPetIndex = 1;
@@ -586,39 +564,31 @@ end
 
 function GQ(currentIds, skills, isChange2)
 
-    -- 此類型寵物有幾排
     OutputLogMessage("skillslength = %s \n", table.getn(skills));
-    -- 現在使用第幾排
     OutputLogMessage("currentSkillIndex = %s \n", currentIds.currentSkillIndex);
 
-    -- currentIds.currentSkillIndex => 現在第幾排
-    -- currentIds.currentPetIndex => 這一排的第幾個
-    local skill = skills[currentIds.currentSkillIndex]; -- 切換設定檔到 currentIds.currentSkillIndex 排
-    local pets = skill.petKeys; -- 取得寵物按鍵的陣列
-    local pet = pets[currentIds.currentPetIndex]; -- 等等要叫得是哪個寵物
+
+    local skill = skills[currentIds.currentSkillIndex];
+    local pets = skill.petKeys;
+    local pet = pets[currentIds.currentPetIndex];
     OutputLogMessage("pet = %s \n", (currentIds.currentPetIndex));
 
-    -- 是否需要切換左右欄位
     if (isChange2 == true) then
         PressKey("lctrl");
         PressAndReleaseKey("tilde");
         ReleaseKey("lctrl");
     end
 
-    -- 切換到對應標籤 1~8
     PressKey("lctrl");
     PressAndReleaseKey(skill.skill);
     ReleaseKey("lctrl");
 
-    -- 召寵
     PressAndReleaseKey(pet);
 
     Sleep(500)
 
-    -- 下技能
     PressAndReleaseKey("equal");
 
-    -- 是否需要切換左右欄位
     if (isChange2 == true) then
         PressKey("lctrl");
         PressAndReleaseKey("tilde");
@@ -627,21 +597,15 @@ function GQ(currentIds, skills, isChange2)
 
     Sleep(800);
 
-    -- 收寵
     PressAndReleaseKey(skill.backSkill);
     Sleep(100)
 
-    -- 如果這頁還沒叫完
     if (currentIds.currentPetIndex < table.getn(pets)) then
-        -- 下次要叫的寵物
         currentIds.currentPetIndex = currentIds.currentPetIndex + 1;
     else
-        -- 如果這頁叫完了 切換到下一頁
         currentIds.currentSkillIndex = currentIds.currentSkillIndex + 1;
-        -- 從下一頁的第一支開始
         currentIds.currentPetIndex = 1;
     end
-    -- 如果頁數溢位 回到第一頁
     if (currentIds.currentSkillIndex > table.getn(skills)) then
         currentIds.currentSkillIndex = 1;
         currentIds.currentPetIndex = 1;
